@@ -30,9 +30,10 @@ class ATSerialOperation: NSOperation {
         }
     }
     
-    private var _executing = false
-    private var _finished = false
     var task: Task
+    var result: AnyObject?
+    var _executing = false
+    var _finished = false
     
     init(task: Task) {
         self.task = task

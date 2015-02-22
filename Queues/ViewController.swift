@@ -24,46 +24,50 @@ class ViewController: UIViewController {
         let queue = NSOperationQueue()
         queue.maxConcurrentOperationCount = 1
         
+        var response: NSURLResponse?
         let operation = ATSerialOperation({ task in
             println("#1 started")
             let url = NSURL(string: "http://transport.opendata.ch/v1/connections?from=Geneva&to=Zurich")
             let request = NSURLRequest(URL:url!)
             let config = NSURLSessionConfiguration.defaultSessionConfiguration()
             let session = NSURLSession(configuration: config)
-            let task : NSURLSessionDataTask = session.dataTaskWithRequest(request, completionHandler: {(data, response, error) in
+            session.dataTaskWithRequest(request, completionHandler: {(data, response, error) in
                 println("#1 finished")
-            })
-            task.resume()
+                var jsonError: NSError?
+                if let json = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: &jsonError) as? NSDictionary {
+                    
+                    task.result = json
                     task.finish()
+                }
+
+            }).resume()
         })
         
         let operation2 = ATSerialOperation({ task in
+            println(operation.result)
             println("#2 started")
             NSThread.sleepForTimeInterval(2)
-            println("#2 finished")
-            block.finish()
-        })
-        
-        // If waitUntilFinished is true, it blocks the main Thread until finished.
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0), { () -> Void in
-            queue.addOperations([operation, operation2], waitUntilFinished: true)
-            println("#1-#2 finished")
             task.finish()
         })
         
-//        queue.addOperations([operation, operation2], waitUntilFinished: false)
+        operation2.completionBlock = {
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                println("#2 finished")
+                println("isMainThread: \(NSThread.isMainThread())")
+            })
+        }
+
+        queue.addOperations([operation, operation2], waitUntilFinished: false)
         
         println("end")
         let elapsed = NSDate().timeIntervalSinceDate(now)
         println("isMainThread: \(NSThread.isMainThread()), elapsed: \(elapsed)")
     }
-
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
 
 }
 
