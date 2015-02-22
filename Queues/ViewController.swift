@@ -24,7 +24,6 @@ class ViewController: UIViewController {
         let queue = NSOperationQueue()
         queue.maxConcurrentOperationCount = 1
         
-        var response: NSURLResponse?
         let operation = ATSerialOperation({ task in
             println("#1 started")
             let url = NSURL(string: "http://transport.opendata.ch/v1/connections?from=Geneva&to=Zurich")
@@ -33,6 +32,11 @@ class ViewController: UIViewController {
             let session = NSURLSession(configuration: config)
             session.dataTaskWithRequest(request, completionHandler: {(data, response, error) in
                 println("#1 finished")
+                
+                if (error != nil) {
+                    println("#1 Handle error")
+                }
+                
                 var jsonError: NSError?
                 if let json = NSJSONSerialization.JSONObjectWithData(data, options: nil, error: &jsonError) as? NSDictionary {
                     
