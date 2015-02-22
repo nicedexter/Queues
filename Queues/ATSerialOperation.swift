@@ -8,7 +8,7 @@
 
 import Foundation
 
-typealias CompletionHandler = (ATSerialOperation -> Void)
+typealias Task = (ATSerialOperation -> Void)
 
 class ATSerialOperation: NSOperation {
     
@@ -30,16 +30,16 @@ class ATSerialOperation: NSOperation {
         }
     }
     
-    private var completionHandler: CompletionHandler
     private var _executing = false
     private var _finished = false
+    var task: Task
     
-    init(block: CompletionHandler) {
-        self.completionHandler = block
+    init(task: Task) {
+        self.task = task
     }
     
     override func start() {
-        completionHandler(self)
+        task(self)
         
         self.willChangeValueForKey("isExecuting")
         executing = true

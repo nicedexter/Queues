@@ -24,7 +24,7 @@ class ViewController: UIViewController {
         let queue = NSOperationQueue()
         queue.maxConcurrentOperationCount = 1
         
-        let operation = ATSerialOperation({ block in
+        let operation = ATSerialOperation({ task in
             println("#1 started")
             let url = NSURL(string: "http://transport.opendata.ch/v1/connections?from=Geneva&to=Zurich")
             let request = NSURLRequest(URL:url!)
@@ -32,12 +32,12 @@ class ViewController: UIViewController {
             let session = NSURLSession(configuration: config)
             let task : NSURLSessionDataTask = session.dataTaskWithRequest(request, completionHandler: {(data, response, error) in
                 println("#1 finished")
-                block.finish()
             })
             task.resume()
+                    task.finish()
         })
         
-        let operation2 = ATSerialOperation({ block in
+        let operation2 = ATSerialOperation({ task in
             println("#2 started")
             NSThread.sleepForTimeInterval(2)
             println("#2 finished")
@@ -48,6 +48,7 @@ class ViewController: UIViewController {
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0), { () -> Void in
             queue.addOperations([operation, operation2], waitUntilFinished: true)
             println("#1-#2 finished")
+            task.finish()
         })
         
 //        queue.addOperations([operation, operation2], waitUntilFinished: false)
